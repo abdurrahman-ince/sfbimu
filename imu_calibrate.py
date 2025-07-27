@@ -3,28 +3,33 @@ import json
 import imu
 
 SETUP_FILE = 'setup.json'
-
 CALIBRATION_LOOP_COUNT = 10000
-
 MOVING_STAR_PATTERN = ['/', '-', '\\', '|']
 
-
 def main():
-
     os.system("clear")
 
     print("")
-    
+    print("/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ ")
     print("|  IMU calibration starting... | ")
-    
+    print("\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ ")
     print("")
 
-    with open(SETUP_FILE, 'r') as json_file:
-        setup_data = json.load(json_file)
+    # --- HATA GİDERME ---
+    # Kodun, ilk çalıştırmada 'setup.json' dosyasını bulamayınca çökmesi engellendi.
+    # Artık önce dosyayı okumayı deniyor, bulamazsa boş bir sözlükle devam ediyor.
+    try:
+        with open(SETUP_FILE, 'r') as json_file:
+            setup_data = json.load(json_file)
+        print("-> Mevcut 'setup.json' dosyası bulundu, ayarlar korunacak.")
+    except FileNotFoundError:
+        print("-> 'setup.json' bulunamadı, işlem sonunda yenisi oluşturulacak.")
+        setup_data = {}
+    # --- DÜZELTME SONU ---
 
     imu_device = imu.ImuDevice()
 
-    imu_device.reset        ()
+    imu_device.reset()
     imu_device.reset_offsets()
 
     imu_device.print_imu_info()
@@ -37,13 +42,14 @@ def main():
     y_gyroscope_measure = 0
     z_gyroscope_measure = 0
 
-    print("  ")
+    print(" ")
+    print("Kalibrasyon verisi toplanıyor, lütfen bekleyin...")
 
     for i in range(0, CALIBRATION_LOOP_COUNT):
-        print("\b" + MOVING_STAR_PATTERN[i % 4], end = '', flush = True)
+        print("\b" + MOVING_STAR_PATTERN[i % 4], end='', flush=True)
 
         imu_device.read_acceleration_data()
-        imu_device.read_gyroscope_data   ()
+        imu_device.read_gyroscope_data()
 
         x_acceleration_measure += imu_device.get_x_acceleration()
         y_acceleration_measure += imu_device.get_y_acceleration()
@@ -52,6 +58,8 @@ def main():
         x_gyroscope_measure += imu_device.get_x_gyroscope()
         y_gyroscope_measure += imu_device.get_y_gyroscope()
         z_gyroscope_measure += imu_device.get_z_gyroscope()
+
+    print("\nVeri toplama tamamlandı. Ofsetler hesaplanıyor...")
 
     x_acceleration_measure /= CALIBRATION_LOOP_COUNT
     y_acceleration_measure /= CALIBRATION_LOOP_COUNT
@@ -79,6 +87,7 @@ def main():
 
     imu_device.print_imu_info()
 
+    # Hesaplanan yeni IMU ofsetleri, (varsa) eski ayarların üzerine yazılır.
     setup_data['ACCELERATION_X_OFFSET'] = x_acceleration_offset
     setup_data['ACCELERATION_Y_OFFSET'] = y_acceleration_offset
     setup_data['ACCELERATION_Z_OFFSET'] = z_acceleration_offset
@@ -87,23 +96,21 @@ def main():
     setup_data['GYROSCOPE_Y_OFFSET'] = y_gyroscope_offset
     setup_data['GYROSCOPE_Z_OFFSET'] = z_gyroscope_offset
 
+    # Dosya 'w' (write/yazma) modunda açılarak güncel veriler kaydedilir.
+    # Dosya yoksa bu komut dosyayı sıfırdan oluşturur.
     with open(SETUP_FILE, "w") as json_file:
         json.dump(setup_data, json_file, indent=4)
 
     print("")
-   
+    print("/\/\/\/\/\/\/\/\/\/\/\/\/\ ")
     print("| IMU calibration done!  | ")
-    
+    print("\/\/\/\/\/\/\/\/\/\/\/\/\/ ")
     print("")
 
 if __name__ == '__main__':
-
     try:
-
         main()
-
     except KeyboardInterrupt:
         print("Keyboard interrupt...")
-
     except Exception as e:
         print("Error: " + str(e))
