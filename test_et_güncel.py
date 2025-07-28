@@ -1,5 +1,5 @@
 import json
-import imu_güncel
+import imu_guncel
 import time
 
 print("="*40)
