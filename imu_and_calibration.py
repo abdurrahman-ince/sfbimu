@@ -1,4 +1,4 @@
-# Bu dosyanın adı: imu_ve_kalibrasyon_araci.py
+# Bu dosyanın adı: imu_ve_kalibrasyon_araci.py (Düzeltilmiş Hali)
 # Görevi: ImuDevice sınıfını ve kalibrasyon fonksiyonunu tek bir modülde birleştirmek.
 
 import smbus
@@ -8,15 +8,19 @@ import time
 import os
 
 class I2cDevice:
+    """I2C iletişimini basitleştiren aracı sınıf."""
     def __init__(self, bus, address):
         self.bus = smbus.SMBus(bus)
         self.address = address
+
     def read_byte(self, register):
         return self.bus.read_byte_data(self.address, register)
+
     def write_byte(self, register, value):
         self.bus.write_byte_data(self.address, register, value)
 
 class ImuDevice:
+    """MPU6050 sensörünü temsil eden ve onunla konuşan ana sınıf."""
     IMU_BUS = 1
     IMU_ADDRESS = 0x68
     PWR_MGMT_1 = 0x6B
@@ -52,10 +56,12 @@ class ImuDevice:
         self.i2c_device.write_byte(self.SMPLRT_DIV, 0x04)
 
     def __read_word__(self, register):
-        high = self.i2c_device.read_byte(register)
-        low = self.i2c_device.read_byte(register + 1)
-        value = (high << 8) + low
-        return value - 65536 if value > 32768 else value
+        higher_byte = self.i2c_device.read_byte(register)
+        lower_byte = self.i2c_device.read_byte(register + 1)
+        value = (higher_byte << 8) + lower_byte
+        if value > 32768:
+            value = value - 65536
+        return value
 
     def __write_word__(self, register, value):
         self.i2c_device.write_byte(register, value >> 8)
@@ -108,7 +114,11 @@ def perform_calibration(filename='setup.json'):
         print(f"-> '{filename}' bulunamadı, işlem sonunda yenisi oluşturulacak.")
         setup_data = {}
 
+    # --- HATA BURADAYDI ---
+    # imu.ImuDevice() yerine doğrudan ImuDevice() olarak çağırıyoruz
     imu_device = ImuDevice()
+    # --- DÜZELTME SONU ---
+    
     imu_device.reset_offsets()
 
     loop_count = 10000
