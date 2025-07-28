@@ -16,7 +16,7 @@ except FileNotFoundError:
     print("!!! Çözüm: Lütfen önce 'calibrate.py' programını çalıştırın.\n")
     exit()
 
-# HATA BURADAYDI: imu yerine imu_guncel kullandık
+
 sensor = imu_guncel.ImuDevice()
 print("-> Başarılı: IMU sensör nesnesi oluşturuldu.")
 
@@ -33,7 +33,7 @@ try:
         roll = sensor.roll
         pitch = sensor.pitch
         
-        # HATA BURADAYDI: Artık daha temiz olan property'yi kullanıyoruz
+        # property'yi kullanıyoruz
         pitch_rate = sensor.gyro_y_scaled
 
         print(f"Roll: {roll:7.2f} | Pitch: {pitch:7.2f} | Pitch Hızı: {pitch_rate:7.2f} dps", end='\r')
