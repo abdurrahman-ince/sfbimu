@@ -1,5 +1,5 @@
 import json
-import imu_guncel
+import imu_guncel  # Dosya adını doğru yazdık
 import time
 
 print("="*40)
@@ -16,7 +16,8 @@ except FileNotFoundError:
     print("!!! Çözüm: Lütfen önce 'calibrate.py' programını çalıştırın.\n")
     exit()
 
-sensor = imu.ImuDevice()
+# HATA BURADAYDI: imu yerine imu_guncel kullandık
+sensor = imu_guncel.ImuDevice()
 print("-> Başarılı: IMU sensör nesnesi oluşturuldu.")
 
 sensor.load_offsets(ayarlar)
@@ -29,15 +30,11 @@ try:
         sensor.read_sensor_data()
         sensor.compute_angles()
 
-        # Açıları alıyoruz
         roll = sensor.roll
         pitch = sensor.pitch
         
-        # Y EKSENİ JİROSKOP DÖNÜŞ HIZINI DA ALIYORUZ
-        # Not: Ham (raw) değeri almak için sensor.gyro['y'] kullanabilirsin.
-        # Ölçeklenmiş (derece/saniye) değeri almak için sensor.gyro_y_scaled kullanabilirsin.
-        # Orijinal koddaki gibi scaled değerini alalım:
-        pitch_rate = sensor.gyro['y'] / sensor.GYRO_SCALE
+        # HATA BURADAYDI: Artık daha temiz olan property'yi kullanıyoruz
+        pitch_rate = sensor.gyro_y_scaled
 
         print(f"Roll: {roll:7.2f} | Pitch: {pitch:7.2f} | Pitch Hızı: {pitch_rate:7.2f} dps", end='\r')
         time.sleep(0.1)
