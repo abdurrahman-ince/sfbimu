@@ -1,5 +1,4 @@
 
-# Görevi: ImuDevice sınıfını ve kalibrasyon fonksiyonunu modern ve kısa bir yapıda birleştirmek.
 
 import smbus
 import json
